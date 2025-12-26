@@ -3,6 +3,7 @@ const cors = require("cors");
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -51,7 +52,8 @@ app.put("/tasks/:id", (req, res) => {
   res.json(task);
 });
 
-const PORT = 5000;
+// ✅ IMPORTANT: Render PORT fix
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
