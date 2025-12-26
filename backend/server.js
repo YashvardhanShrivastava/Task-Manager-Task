@@ -3,8 +3,15 @@ const cors = require("cors");
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// ✅ FIXED CORS FOR NETLIFY
+app.use(
+  cors({
+    origin: "*", // allow all origins (Netlify, local, etc.)
+    methods: ["GET", "POST", "PUT"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
 app.use(express.json());
 
 let tasks = [];
@@ -52,7 +59,7 @@ app.put("/tasks/:id", (req, res) => {
   res.json(task);
 });
 
-// ✅ IMPORTANT: Render PORT fix
+// ✅ Render PORT fix
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
