@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:5000/tasks";
+// ✅ LIVE BACKEND URL (Render)
+const API_URL = "https://task-manager-backend.onrender.com/tasks";
 
 const loadingText = document.getElementById("loading");
 const errorText = document.getElementById("error");
@@ -21,6 +22,11 @@ function fetchTasks() {
       taskList.innerHTML = "";
       loadingText.style.display = "none";
 
+      if (tasks.length === 0) {
+        taskList.innerHTML = "<p>No tasks available</p>";
+        return;
+      }
+
       tasks.forEach(task => {
         const div = document.createElement("div");
         div.className = "task";
@@ -28,7 +34,7 @@ function fetchTasks() {
         div.innerHTML = `
           <div>
             <strong>${task.title}</strong><br/>
-            <small>${task.description}</small><br/>
+            <small>${task.description || ""}</small><br/>
             <small>Status: ${task.status}</small>
           </div>
           <button onclick="updateStatus(${task.id})">Next</button>
@@ -39,14 +45,14 @@ function fetchTasks() {
     })
     .catch(err => {
       loadingText.style.display = "none";
-      errorText.textContent = err.message;
+      errorText.textContent = "Backend not reachable. Please try again later.";
+      console.error(err);
     });
 }
 
-
 addTaskBtn.addEventListener("click", () => {
-  const title = document.getElementById("title").value;
-  const description = document.getElementById("description").value;
+  const title = document.getElementById("title").value.trim();
+  const description = document.getElementById("description").value.trim();
 
   if (!title) {
     alert("Title is required");
@@ -60,11 +66,20 @@ addTaskBtn.addEventListener("click", () => {
     },
     body: JSON.stringify({ title, description })
   })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Failed to add task");
+      }
+      return res.json();
+    })
     .then(() => {
       document.getElementById("title").value = "";
       document.getElementById("description").value = "";
       fetchTasks();
+    })
+    .catch(err => {
+      errorText.textContent = "Failed to add task";
+      console.error(err);
     });
 });
 
@@ -72,8 +87,18 @@ function updateStatus(id) {
   fetch(`${API_URL}/${id}`, {
     method: "PUT"
   })
-    .then(res => res.json())
-    .then(() => fetchTasks());
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Failed to update status");
+      }
+      return res.json();
+    })
+    .then(() => fetchTasks())
+    .catch(err => {
+      errorText.textContent = "Failed to update task status";
+      console.error(err);
+    });
 }
 
+// Initial load
 fetchTasks();
